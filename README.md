@@ -10,6 +10,7 @@ Analysen dauerhaft in einer **Neon-PostgreSQL-Datenbank**.
 - **Login & Registrierung** mit E-Mail + Passwort (Passwörter via bcrypt gehasht)
 - **Session** über signiertes, httpOnly-Cookie (JWT)
 - **Meine Analysen** – Finder-Ergebnisse je Nutzer speichern, wieder laden und löschen
+- **Passwort vergessen** – Reset-Link per E-Mail (Resend), Token nur als Hash gespeichert, 1 Std. gültig
 
 ## Architektur
 
@@ -28,6 +29,8 @@ Analysen dauerhaft in einer **Neon-PostgreSQL-Datenbank**.
 | POST    | `/api/auth/login`     | Anmelden                       |
 | POST    | `/api/auth/logout`    | Abmelden                       |
 | GET     | `/api/auth/me`        | Aktuelle Session prüfen        |
+| POST    | `/api/auth/forgot`    | Reset-Link anfordern           |
+| POST    | `/api/auth/reset`     | Neues Passwort per Token setzen|
 | GET     | `/api/analyses`       | Gespeicherte Analysen listen   |
 | POST    | `/api/analyses`       | Analyse speichern              |
 | DELETE  | `/api/analyses/:id`   | Analyse löschen                |

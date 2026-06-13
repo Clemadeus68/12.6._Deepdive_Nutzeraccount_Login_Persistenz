@@ -1,6 +1,7 @@
 // Hilfsfunktionen für Authentifizierung: Passwort-Hashing, JWT-Session-Cookies.
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { randomBytes, createHash } from 'node:crypto';
 
 const COOKIE_NAME = 'aln_session';
 const MAX_AGE_SEC = 60 * 60 * 24 * 7; // 7 Tage
@@ -58,6 +59,17 @@ export function getSession(req) {
   } catch {
     return null;
   }
+}
+
+// Erzeugt ein Reset-Token. Klartext geht per Mail an den Nutzer,
+// in der DB wird nur der SHA-256-Hash gespeichert.
+export function createResetToken() {
+  const token = randomBytes(32).toString('hex');
+  return { token, tokenHash: hashToken(token) };
+}
+
+export function hashToken(token) {
+  return createHash('sha256').update(token).digest('hex');
 }
 
 // Liest einen JSON-Body unabhängig davon, ob Vercel ihn schon geparst hat.

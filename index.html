@@ -187,6 +187,37 @@ body { font-family: Calibri, 'Segoe UI', sans-serif; background: #f4f4f4; color:
         <button type="submit" class="auth-btn" id="auth-submit">Anmelden</button>
         <div class="auth-msg" id="auth-msg"></div>
       </form>
+      <div id="forgot-link" style="margin-top:14px;text-align:center">
+        <a href="#" onclick="showForgot();return false" style="font-size:12px;color:var(--tuerkis)">Passwort vergessen?</a>
+      </div>
+
+      <!-- Passwort vergessen: Link anfordern -->
+      <form id="forgot-form" class="hidden" onsubmit="return submitForgot(event)">
+        <p style="font-size:12px;color:var(--mittelgrau);margin-bottom:14px">Gib deine E-Mail ein. Wir senden dir einen Link zum Zurücksetzen.</p>
+        <div class="auth-field">
+          <label for="forgot-email">E-Mail</label>
+          <input type="email" id="forgot-email" autocomplete="email" required>
+        </div>
+        <button type="submit" class="auth-btn" id="forgot-submit">Reset-Link senden</button>
+        <div class="auth-msg" id="forgot-msg"></div>
+        <div style="margin-top:14px;text-align:center">
+          <a href="#" onclick="backToLogin();return false" style="font-size:12px;color:var(--tuerkis)">← Zurück zur Anmeldung</a>
+        </div>
+      </form>
+
+      <!-- Neues Passwort setzen (per Reset-Link) -->
+      <form id="reset-form" class="hidden" onsubmit="return submitReset(event)">
+        <p style="font-size:12px;color:var(--mittelgrau);margin-bottom:14px">Vergib ein neues Passwort (mindestens 8 Zeichen).</p>
+        <div class="auth-field">
+          <label for="reset-password">Neues Passwort</label>
+          <input type="password" id="reset-password" autocomplete="new-password" required>
+        </div>
+        <button type="submit" class="auth-btn" id="reset-submit">Passwort speichern</button>
+        <div class="auth-msg" id="reset-msg"></div>
+        <div style="margin-top:14px;text-align:center">
+          <a href="#" onclick="backToLogin();return false" style="font-size:12px;color:var(--tuerkis)">← Zur Anmeldung</a>
+        </div>
+      </form>
     </div>
   </div>
 </div>
@@ -804,11 +835,80 @@ async function doLogout() {
 }
 
 async function checkSession() {
+  // Reset-Link aufgerufen? Dann direkt das Reset-Formular zeigen.
+  const params = new URLSearchParams(window.location.search);
+  const resetToken = params.get('reset');
+  if(resetToken){ resetTokenValue = resetToken; showReset(); return; }
   try {
     const res = await fetch('/api/auth/me');
     if(res.ok){ const d = await res.json(); if(d.user){ currentUser = d.user; enterApp(); return; } }
   } catch {}
   // nicht angemeldet → Overlay bleibt sichtbar
+}
+
+// ─── PASSWORT VERGESSEN / ZURÜCKSETZEN ──────────────────────────────────────
+let resetTokenValue = null;
+
+// Schaltet zwischen den Ansichten im Login-Overlay um.
+function showAuthView(view) {
+  const isLogin = view==='login';
+  document.querySelector('.auth-tabs').classList.toggle('hidden', !isLogin);
+  document.getElementById('auth-form').classList.toggle('hidden', !isLogin);
+  document.getElementById('forgot-link').classList.toggle('hidden', !isLogin);
+  document.getElementById('forgot-form').classList.toggle('hidden', view!=='forgot');
+  document.getElementById('reset-form').classList.toggle('hidden', view!=='reset');
+}
+
+function showForgot(){ setAuthMsg(''); document.getElementById('forgot-msg').textContent=''; showAuthView('forgot'); }
+function showReset(){ document.getElementById('reset-msg').textContent=''; showAuthView('reset'); }
+function backToLogin(){
+  // Reset-Parameter aus der URL entfernen, damit ein Reload normal anmeldet.
+  if(resetTokenValue){ history.replaceState(null,'',window.location.pathname); resetTokenValue=null; }
+  switchAuth('login'); showAuthView('login');
+}
+
+function setMsg(id, text, ok){
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = 'auth-msg' + (text ? (ok ? ' ok' : ' err') : '');
+}
+
+async function submitForgot(e){
+  e.preventDefault();
+  const btn = document.getElementById('forgot-submit');
+  const email = document.getElementById('forgot-email').value.trim();
+  btn.disabled = true; setMsg('forgot-msg','');
+  try {
+    const res = await fetch('/api/auth/forgot', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({email})
+    });
+    const data = await res.json();
+    if(res.ok){ setMsg('forgot-msg', data.message || 'E-Mail versendet, falls das Konto existiert.', true); }
+    else { setMsg('forgot-msg', data.error || 'Fehler.'); }
+  } catch { setMsg('forgot-msg','Verbindungsfehler.'); }
+  btn.disabled = false;
+  return false;
+}
+
+async function submitReset(e){
+  e.preventDefault();
+  const btn = document.getElementById('reset-submit');
+  const password = document.getElementById('reset-password').value;
+  btn.disabled = true; setMsg('reset-msg','');
+  try {
+    const res = await fetch('/api/auth/reset', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({token:resetTokenValue, password})
+    });
+    const data = await res.json();
+    if(res.ok){
+      setMsg('reset-msg', (data.message||'Passwort aktualisiert.')+' Weiterleitung …', true);
+      setTimeout(()=>backToLogin(), 1600);
+    } else { setMsg('reset-msg', data.error || 'Fehler.'); }
+  } catch { setMsg('reset-msg','Verbindungsfehler.'); }
+  btn.disabled = false;
+  return false;
 }
 
 // ─── PERSISTENZ: ANALYSEN SPEICHERN / LADEN ─────────────────────────────────
