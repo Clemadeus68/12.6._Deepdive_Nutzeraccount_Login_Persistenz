@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alchimedus Navigator</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --gruen: #8CC63E;
+  --dunkelgrau: #454544;
+  --tuerkis: #33AB97;
+  --blau-tuerkis: #13A1B6;
+  --hellgrau: #E9E9E9;
+  --mittelgrau: #777777;
+  --weiss: #ffffff;
+  --fast-schwarz: #111111;
+}
+body { font-family: Calibri, 'Segoe UI', sans-serif; background: #f4f4f4; color: var(--fast-schwarz); font-size: 14px; }
+.app { max-width: 920px; margin: 0 auto; background: var(--weiss); min-height: 100vh; }
+.header { background: var(--hellgrau); padding: 16px 24px; border-bottom: 3px solid var(--gruen); display: flex; justify-content: space-between; align-items: center; }
+.header-brand { font-size: 18px; font-weight: 700; color: var(--dunkelgrau); }
+.header-sub { font-size: 11px; color: var(--mittelgrau); }
+.header-right { font-size: 11px; color: var(--mittelgrau); text-align: right; }
+.nav-tabs { display: flex; border-bottom: 2px solid var(--hellgrau); background: var(--weiss); }
+.tab-btn { padding: 10px 20px; border: none; background: transparent; color: var(--mittelgrau); font-family: Calibri, sans-serif; font-size: 13px; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
+.tab-btn:hover { color: var(--tuerkis); }
+.tab-btn.active { color: var(--dunkelgrau); font-weight: 700; border-bottom-color: var(--gruen); }
+.content { padding: 24px; }
+.finder-title { font-size: 20px; font-weight: 700; color: var(--dunkelgrau); margin-bottom: 4px; }
+.finder-line { width: 48px; height: 3px; background: var(--gruen); margin-bottom: 20px; }
+.step-block { background: var(--hellgrau); border-radius: 6px; padding: 18px 20px; margin-bottom: 14px; }
+.step-label { font-size: 11px; font-weight: 700; color: var(--tuerkis); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+.step-question { font-size: 14px; font-weight: 600; color: var(--dunkelgrau); margin-bottom: 12px; }
+.option-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt-btn { padding: 7px 14px; border: 2px solid #ddd; border-radius: 20px; background: var(--weiss); color: var(--dunkelgrau); font-family: Calibri, sans-serif; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+.opt-btn:hover { border-color: var(--gruen); color: var(--gruen); }
+.opt-btn.sel { border-color: var(--gruen); background: var(--gruen); color: var(--weiss); font-weight: 700; }
+.nis2-warn { background: #fff8e1; border-left: 4px solid #f9a825; border-radius: 0 6px 6px 0; padding: 14px 16px; margin: 14px 0; display: none; }
+.nis2-warn.on { display: block; }
+.nis2-warn-title { font-weight: 700; color: #e65100; margin-bottom: 6px; font-size: 13px; }
+.nis2-warn-text { font-size: 12px; color: var(--dunkelgrau); line-height: 1.5; }
+.nis2-detail { background: #fff3e0; border: 1px solid #ffcc80; border-radius: 6px; padding: 14px 16px; margin: 14px 0; display: none; }
+.nis2-detail.on { display: block; }
+.nis2-detail-title { font-weight: 700; color: #bf360c; margin-bottom: 8px; font-size: 13px; }
+.nis2-detail ul { margin: 6px 0 0 16px; }
+.nis2-detail li { font-size: 12px; color: var(--dunkelgrau); margin-bottom: 3px; }
+.results-section { margin-top: 24px; display: none; }
+.results-section.on { display: block; }
+.results-title { font-size: 16px; font-weight: 700; color: var(--dunkelgrau); margin-bottom: 4px; }
+.results-line { width: 36px; height: 3px; background: var(--gruen); margin-bottom: 16px; }
+.report-card { border: 2px solid var(--hellgrau); border-radius: 8px; padding: 16px 18px; margin-bottom: 12px; }
+.report-card.prim { border-color: var(--gruen); }
+.report-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; flex-wrap: wrap; gap: 6px; }
+.report-name { font-weight: 700; color: var(--dunkelgrau); font-size: 14px; }
+.badges { display: flex; gap: 5px; flex-wrap: wrap; }
+.badge { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 700; }
+.b-prim { background: var(--gruen); color: var(--weiss); }
+.b-bafa { background: #e8f5e9; color: #2e7d32; }
+.b-inqa { background: #e3f2fd; color: #1565c0; }
+.b-nis2 { background: #fff3e0; color: #e65100; }
+.report-zweck { font-size: 12px; color: var(--mittelgrau); margin-bottom: 6px; font-style: italic; }
+.report-inhalt { font-size: 13px; color: var(--dunkelgrau); line-height: 1.5; }
+.report-motto { margin-top: 8px; font-size: 12px; color: var(--tuerkis); font-weight: 600; }
+.report-hinweis { margin-top: 6px; font-size: 11px; color: var(--mittelgrau); font-style: italic; }
+.report-kontakt { margin-top: 8px; font-size: 12px; color: var(--tuerkis); font-weight: 600; }
+.report-card.svc { border-color: var(--tuerkis); background: #f0fbf9; }
+.b-svc { background: #e0f5f2; color: #1a7a6e; }
+.src-hint { font-size: 10px; color: var(--mittelgrau); margin-top: 4px; font-style: italic; }
+.reset-btn { margin-top: 20px; padding: 8px 20px; background: var(--hellgrau); border: none; border-radius: 4px; color: var(--dunkelgrau); font-family: Calibri, sans-serif; font-size: 13px; cursor: pointer; font-weight: 600; }
+.reset-btn:hover { background: var(--gruen); color: var(--weiss); }
+/* ── Download-Leiste ── */
+.download-bar { display:none; margin-top: 20px; padding: 16px 18px; background: #f0f7e6; border: 1px solid #c5e09a; border-radius: 6px; }
+.download-bar-label { font-size: 12px; font-weight: 700; color: var(--dunkelgrau); margin-bottom: 10px; }
+.download-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+.download-btns { display: flex; gap: 10px; }
+.kunden-input { flex: 1; padding: 8px 12px; font-size: 13px; font-family: Calibri, sans-serif; border: 1px solid #c5e09a; border-radius: 4px; background: var(--weiss); color: var(--dunkelgrau); }
+.kunden-input:focus { outline: none; border-color: var(--gruen); }
+.dl-btn { padding: 8px 20px; border: none; border-radius: 4px; font-family: Calibri, sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: background 0.2s; white-space: nowrap; }
+.dl-md  { background: var(--hellgrau); color: var(--dunkelgrau); }
+.dl-md:hover  { background: #ddd; }
+.dl-pdf { background: var(--gruen); color: var(--weiss); }
+.dl-pdf:hover { background: #7aad35; }
+/* ── Print ── */
+@media print {
+  .nav-tabs, .step-block, .nis2-warn, .nis2-detail,
+  .reset-btn, .download-bar, #tab-db, #tab-nis2,
+  .results-title, .results-line { display: none !important; }
+  body { background: white; font-size: 11pt; }
+  .app { box-shadow: none; max-width: 100%; }
+  .header { print-color-adjust: exact; -webkit-print-color-adjust: exact;
+    border-bottom: 2pt solid #8CC63E; padding: 8pt 12pt; margin-bottom: 16pt; }
+  .header-brand { font-size: 14pt; }
+  .report-card { border: 1pt solid #ccc !important; border-radius: 4pt;
+    padding: 12pt 14pt; margin-bottom: 14pt;
+    page-break-inside: avoid; break-inside: avoid; }
+  .report-card.prim { border-color: #8CC63E !important; }
+  .report-name { font-size: 12pt; }
+  .badge { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .report-zweck { font-size: 9pt; }
+  .report-inhalt { font-size: 10pt; }
+  .report-hinweis { font-size: 8pt; }
+  .src-hint { font-size: 8pt; }
+  #results { display: block !important; }
+  .results-section { display: block !important; }
+}
+.db-filter { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.fchip { padding: 5px 12px; border: 1px solid #ddd; border-radius: 16px; background: var(--weiss); font-size: 12px; cursor: pointer; color: var(--mittelgrau); font-family: Calibri, sans-serif; }
+.fchip.on { background: var(--dunkelgrau); color: var(--weiss); border-color: var(--dunkelgrau); }
+.db-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.db-table th { background: var(--dunkelgrau); color: var(--weiss); padding: 10px 12px; text-align: left; font-size: 12px; }
+.db-table td { padding: 10px 12px; border-bottom: 1px solid var(--hellgrau); color: var(--dunkelgrau); vertical-align: top; }
+.db-table tr:hover td { background: #f9f9f9; }
+.pill { display: inline-block; padding: 1px 7px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+.pj { background: #e8f5e9; color: #2e7d32; }
+.pn { background: #ffebee; color: #c62828; }
+.pb { background: #e3f2fd; color: #1565c0; }
+.info-h2 { font-size: 15px; font-weight: 700; color: var(--tuerkis); margin-bottom: 10px; margin-top: 20px; }
+.info-p { font-size: 13px; color: var(--dunkelgrau); line-height: 1.6; margin-bottom: 8px; }
+.info-box { background: var(--hellgrau); border-left: 4px solid var(--gruen); padding: 12px 14px; border-radius: 0 6px 6px 0; font-size: 12px; color: var(--dunkelgrau); line-height: 1.5; margin-top: 8px; }
+/* ── Auth / Login ── */
+.auth-overlay { position: fixed; inset: 0; background: #f4f4f4; display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 1000; }
+.auth-card { background: var(--weiss); max-width: 380px; width: 100%; border-radius: 8px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); overflow: hidden; }
+.auth-head { background: var(--hellgrau); padding: 20px 24px; border-bottom: 3px solid var(--gruen); }
+.auth-brand { font-size: 18px; font-weight: 700; color: var(--dunkelgrau); }
+.auth-sub { font-size: 11px; color: var(--mittelgrau); margin-top: 2px; }
+.auth-body { padding: 22px 24px; }
+.auth-tabs { display: flex; gap: 4px; margin-bottom: 18px; }
+.auth-tab { flex: 1; padding: 8px; border: none; background: var(--hellgrau); color: var(--mittelgrau); font-family: Calibri, sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 4px; }
+.auth-tab.active { background: var(--gruen); color: var(--weiss); }
+.auth-field { margin-bottom: 14px; }
+.auth-field label { display: block; font-size: 12px; font-weight: 600; color: var(--dunkelgrau); margin-bottom: 5px; }
+.auth-field input { width: 100%; padding: 9px 12px; font-size: 13px; font-family: Calibri, sans-serif; border: 1px solid #ddd; border-radius: 4px; }
+.auth-field input:focus { outline: none; border-color: var(--gruen); }
+.auth-btn { width: 100%; padding: 10px; border: none; border-radius: 4px; background: var(--gruen); color: var(--weiss); font-family: Calibri, sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+.auth-btn:hover { background: #7aad35; }
+.auth-btn:disabled { opacity: 0.6; cursor: default; }
+.auth-msg { font-size: 12px; margin-top: 12px; min-height: 16px; }
+.auth-msg.err { color: #c62828; }
+.auth-msg.ok { color: #2e7d32; }
+.hidden { display: none !important; }
+.user-box { display: flex; align-items: center; gap: 10px; }
+.user-name { font-size: 11px; color: var(--dunkelgrau); font-weight: 600; }
+.logout-btn { padding: 4px 12px; border: 1px solid #ccc; background: var(--weiss); border-radius: 4px; font-family: Calibri, sans-serif; font-size: 11px; cursor: pointer; color: var(--mittelgrau); }
+.logout-btn:hover { border-color: var(--gruen); color: var(--gruen); }
+.dl-save { background: var(--tuerkis); color: var(--weiss); }
+.dl-save:hover { background: #2a9180; }
+/* ── Meine Analysen ── */
+.saved-card { border: 2px solid var(--hellgrau); border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; }
+.saved-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.saved-title { font-weight: 700; color: var(--dunkelgrau); font-size: 14px; }
+.saved-meta { font-size: 11px; color: var(--mittelgrau); margin-top: 3px; }
+.saved-list { font-size: 12px; color: var(--dunkelgrau); margin-top: 8px; line-height: 1.5; }
+.saved-del { padding: 4px 10px; border: 1px solid #ffcdd2; background: var(--weiss); color: #c62828; border-radius: 4px; font-family: Calibri, sans-serif; font-size: 11px; cursor: pointer; }
+.saved-del:hover { background: #ffebee; }
+.saved-empty { color: var(--mittelgrau); font-size: 13px; padding: 12px 0; }
+@media print { .auth-overlay, .user-box, .dl-save { display: none !important; } }
+</style>
+</head>
+<body>
+
+<!-- LOGIN / REGISTRIERUNG -->
+<div class="auth-overlay" id="auth-overlay">
+  <div class="auth-card">
+    <div class="auth-head">
+      <div class="auth-brand">ALCHIMEDUS NAVIGATOR</div>
+      <div class="auth-sub">Bitte anmelden &middot; be nice Organisationsberatung</div>
+    </div>
+    <div class="auth-body">
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-login-btn" onclick="switchAuth('login')">Anmelden</button>
+        <button class="auth-tab" id="tab-register-btn" onclick="switchAuth('register')">Registrieren</button>
+      </div>
+      <form id="auth-form" onsubmit="return submitAuth(event)">
+        <div class="auth-field" id="field-name" style="display:none">
+          <label for="auth-name">Name (optional)</label>
+          <input type="text" id="auth-name" autocomplete="name">
+        </div>
+        <div class="auth-field">
+          <label for="auth-email">E-Mail</label>
+          <input type="email" id="auth-email" autocomplete="email" required>
+        </div>
+        <div class="auth-field">
+          <label for="auth-password">Passwort</label>
+          <input type="password" id="auth-password" autocomplete="current-password" required>
+        </div>
+        <button type="submit" class="auth-btn" id="auth-submit">Anmelden</button>
+        <div class="auth-msg" id="auth-msg"></div>
+      </form>
+      <div id="forgot-link" style="margin-top:14px;text-align:center">
+        <a href="#" onclick="showForgot();return false" style="font-size:12px;color:var(--tuerkis)">Passwort vergessen?</a>
+      </div>
+
+      <!-- Passwort vergessen: Link anfordern -->
+      <form id="forgot-form" class="hidden" onsubmit="return submitForgot(event)">
+        <p style="font-size:12px;color:var(--mittelgrau);margin-bottom:14px">Gib deine E-Mail ein. Wir senden dir einen Link zum Zurücksetzen.</p>
+        <div class="auth-field">
+          <label for="forgot-email">E-Mail</label>
+          <input type="email" id="forgot-email" autocomplete="email" required>
+        </div>
+        <button type="submit" class="auth-btn" id="forgot-submit">Reset-Link senden</button>
+        <div class="auth-msg" id="forgot-msg"></div>
+        <div style="margin-top:14px;text-align:center">
+          <a href="#" onclick="backToLogin();return false" style="font-size:12px;color:var(--tuerkis)">← Zurück zur Anmeldung</a>
+        </div>
+      </form>
+
+      <!-- Neues Passwort setzen (per Reset-Link) -->
+      <form id="reset-form" class="hidden" onsubmit="return submitReset(event)">
+        <p style="font-size:12px;color:var(--mittelgrau);margin-bottom:14px">Vergib ein neues Passwort (mindestens 8 Zeichen).</p>
+        <div class="auth-field">
+          <label for="reset-password">Neues Passwort</label>
+          <input type="password" id="reset-password" autocomplete="new-password" required>
+        </div>
+        <button type="submit" class="auth-btn" id="reset-submit">Passwort speichern</button>
+        <div class="auth-msg" id="reset-msg"></div>
+        <div style="margin-top:14px;text-align:center">
+          <a href="#" onclick="backToLogin();return false" style="font-size:12px;color:var(--tuerkis)">← Zur Anmeldung</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="app hidden" id="app">
+<div class="header">
+  <div>
+    <div class="header-brand">ALCHIMEDUS NAVIGATOR</div>
+    <div class="header-sub">Dynamische Berichtswahl-Datenbank &middot; be nice Organisationsberatung</div>
+  </div>
+  <div class="user-box">
+    <span class="user-name" id="user-name"></span>
+    <button class="logout-btn" onclick="doLogout()">Abmelden</button>
+  </div>
+</div>
+<div class="nav-tabs">
+  <button class="tab-btn active" onclick="showTab('finder',this)">Berichts-Finder</button>
+  <button class="tab-btn" onclick="showTab('db',this)">Alle Berichte</button>
+  <button class="tab-btn" onclick="showTab('nis2',this)">NIS2-Info</button>
+  <button class="tab-btn" onclick="showTab('saved',this)">Meine Analysen</button>
+</div>
+
+<!-- FINDER -->
+<div id="tab-finder" class="content">
+  <div class="finder-title">Welcher Bericht passt?</div>
+  <div class="finder-line"></div>
+  <div class="step-block">
+    <div class="step-label">Schritt 1</div>
+    <div class="step-question">In welcher Situation befindest Du Dich?</div>
+    <div class="option-grid">
+      <button class="opt-btn" onclick="pick('sit','akquise',this)">Akquise / Erstkontakt</button>
+      <button class="opt-btn" onclick="pick('sit','kickoff',this)">Kick-Off / Projektstart</button>
+      <button class="opt-btn" onclick="pick('sit','zwisch',this)">Laufendes Projekt</button>
+      <button class="opt-btn" onclick="pick('sit','abschluss',this)">Konzeptabschluss</button>
+      <button class="opt-btn" onclick="pick('sit','nachfolge',this)">Nachfolge / M&amp;A</button>
+      <button class="opt-btn" onclick="pick('sit','ki',this)">KI / Digitalisierung</button>
+      <button class="opt-btn" onclick="pick('sit','vertrieb',this)">Vertrieb / Marketing</button>
+      <button class="opt-btn" onclick="pick('sit','finanzierung',this)">Finanzierungsbedarf</button>
+    </div>
+  </div>
+  <div class="step-block" id="st-foerd" style="display:none">
+    <div class="step-label">Schritt 2</div>
+    <div class="step-question">Förderkontext?</div>
+    <div class="option-grid">
+      <button class="opt-btn" onclick="pick('foerd','bafa',this)">BAFA</button>
+      <button class="opt-btn" onclick="pick('foerd','inqa',this)">INQA</button>
+      <button class="opt-btn" onclick="pick('foerd','kein',this)">Kein Förderprogramm</button>
+      <button class="opt-btn" onclick="pick('foerd','offen',this)">Noch offen</button>
+    </div>
+  </div>
+  <div id="st-nis2" style="display:none">
+    <div class="step-block">
+      <div class="step-label">Schritt 3 &middot; NIS2-Relevanzprüfung</div>
+      <div class="step-question">Wie viele Mitarbeiter hat das Unternehmen?</div>
+      <div class="option-grid">
+        <button class="opt-btn" onclick="pick('ma','unter10',this)">unter 10</button>
+        <button class="opt-btn" onclick="pick('ma','10bis49',this)">10&ndash;49</button>
+        <button class="opt-btn" onclick="pick('ma','50bis249',this)">50&ndash;249</button>
+        <button class="opt-btn" onclick="pick('ma','250plus',this)">250+</button>
+      </div>
+    </div>
+    <div class="step-block">
+      <div class="step-label">Schritt 4 &middot; NIS2-Relevanzprüfung</div>
+      <div class="step-question">Jahresumsatz ca.?</div>
+      <div class="option-grid">
+        <button class="opt-btn" onclick="pick('um','unter2',this)">unter 2 Mio. &euro;</button>
+        <button class="opt-btn" onclick="pick('um','2bis10',this)">2&ndash;10 Mio. &euro;</button>
+        <button class="opt-btn" onclick="pick('um','10bis50',this)">10&ndash;50 Mio. &euro;</button>
+        <button class="opt-btn" onclick="pick('um','50plus',this)">über 50 Mio. &euro;</button>
+      </div>
+    </div>
+    <div class="step-block">
+      <div class="step-label">Schritt 5 &middot; NIS2-Relevanzprüfung</div>
+      <div class="step-question">Branche des Unternehmens?</div>
+      <div class="option-grid">
+        <button class="opt-btn" onclick="pick('br','energie',this)">Energie</button>
+        <button class="opt-btn" onclick="pick('br','gesundheit',this)">Gesundheit / Medizin</button>
+        <button class="opt-btn" onclick="pick('br','transport',this)">Verkehr / Transport</button>
+        <button class="opt-btn" onclick="pick('br','it',this)">IT / Software / SaaS</button>
+        <button class="opt-btn" onclick="pick('br','finanzen',this)">Banken / Finanzen</button>
+        <button class="opt-btn" onclick="pick('br','lebensmittel',this)">Lebensmittel / Chemie</button>
+        <button class="opt-btn" onclick="pick('br','produktion',this)">Produktion / Maschinen</button>
+        <button class="opt-btn" onclick="pick('br','dienst',this)">Dienstleistung / Handel</button>
+        <button class="opt-btn" onclick="pick('br','sonstige',this)">Sonstige</button>
+      </div>
+    </div>
+  </div>
+  <div class="nis2-warn" id="nis2-warn">
+    <div class="nis2-warn-title">&#9888; NIS2-Relevanz erkannt</div>
+    <div class="nis2-warn-text" id="nis2-warn-text"></div>
+  </div>
+  <div class="nis2-detail" id="nis2-detail">
+    <div class="nis2-detail-title">Was das für die Beratung bedeutet</div>
+    <ul id="nis2-detail-list"></ul>
+  </div>
+  <div class="results-section" id="results">
+    <div class="results-title">Empfohlene Berichte</div>
+    <div class="results-line"></div>
+    <div id="results-list"></div>
+    <div class="download-bar" id="download-bar">
+      <div class="download-bar-label">Ergebnisse exportieren</div>
+      <div class="download-row">
+        <select id="doktyp-select" class="kunden-input" style="flex:0 0 200px">
+          <option value="Mandatsstart-Analyse">Mandatsstart-Analyse</option>
+          <option value="Branchenanalyse">Branchenanalyse</option>
+          <option value="Marktanalyse">Marktanalyse</option>
+          <option value="Kontextkern">Kontextkern</option>
+        </select>
+        <input type="text" id="kundenname-input" class="kunden-input" placeholder="Kundenname eingeben …" autocomplete="off">
+      </div>
+      <div class="download-btns">
+        <button class="dl-btn dl-md"  onclick="downloadMD()">↓ Als .md</button>
+        <button class="dl-btn dl-pdf" onclick="downloadPDF()">↓ Als PDF</button>
+        <button class="dl-btn dl-save" onclick="saveAnalysis(this)">✓ Speichern</button>
+      </div>
+    </div>
+    <button class="reset-btn" onclick="resetF()">Neu starten</button>
+  </div>
+</div>
+
+<!-- DB -->
+<div id="tab-db" class="content" style="display:none">
+  <div class="finder-title">Alle Berichte / Fragebögen</div>
+  <div class="finder-line"></div>
+  <div class="db-filter">
+    <button class="fchip on" onclick="filt('alle',this)">Alle</button>
+    <button class="fchip" onclick="filt('bafa',this)">BAFA</button>
+    <button class="fchip" onclick="filt('inqa',this)">INQA</button>
+    <button class="fchip" onclick="filt('ki',this)">KI / Digital</button>
+    <button class="fchip" onclick="filt('nachfolge',this)">Nachfolge</button>
+    <button class="fchip" onclick="filt('vertrieb',this)">Vertrieb</button>
+    <button class="fchip" onclick="filt('finanzierung',this)">Finanzierung</button>
+  </div>
+  <div style="overflow-x:auto">
+  <table class="db-table">
+    <thead><tr><th>Bericht / Fragebogen</th><th>Einsatzzweck</th><th>BAFA</th><th>INQA</th><th>Hinweise</th></tr></thead>
+    <tbody id="db-tbody"></tbody>
+  </table>
+  </div>
+  <div class="src-hint" style="margin-top:12px">Quellen: Newsletter 26.05. & 03.06.2026 · Gesprächsnotizen 02.06.2026 · MD ID 796–798</div>
+</div>
+
+<!-- NIS2 -->
+<div id="tab-nis2" class="content" style="display:none">
+  <div class="finder-title">NIS2 im Beratungskontext</div>
+  <div class="finder-line"></div>
+  <div class="info-h2">Was ist NIS2?</div>
+  <div class="info-p">NIS2 ist eine verbindliche EU-Richtlinie für Cybersicherheit, die Anforderungen an Sicherheit, Meldepflichten und Risikomanagement in kritischen Sektoren deutlich verschärft. In Deutschland sind schätzungsweise 30.000 Unternehmen betroffen, insbesondere mittlere und größere Betriebe.</div>
+  <div class="info-h2">Faustregel zur Ersteinschätzung</div>
+  <div class="info-box"><strong>NIS2 gilt typischerweise, wenn ein Unternehmen in einer erfassten Branche tätig ist und mindestens 50 Mitarbeiter hat oder mehr als 10 Mio. &euro; Umsatz/Bilanzsumme erreicht.</strong></div>
+  <div class="info-h2">Betroffene Branchen (Auswahl)</div>
+  <div class="info-p"><strong>Hohe Kritikalität:</strong> Energie, Verkehr/Transport, Banken, Gesundheitswesen, Trinkwasser, Abwasser, IT/Cloud, Öffentliche Verwaltung, Raumfahrt</div>
+  <div class="info-p"><strong>Weitere Sektoren:</strong> Lebensmittelproduktion, Chemie, Post/Kurier, Abfallwirtschaft, verarbeitendes Gewerbe, Forschungseinrichtungen, digitale Dienste</div>
+  <div class="info-h2">Indirekte Betroffenheit</div>
+  <div class="info-p">Auch Unternehmen, die nicht direkt unter NIS2 fallen, werden zunehmend mit Sicherheitsanforderungen konfrontiert: Ihre Kunden aus regulierten Branchen verlangen MFA, Informationssicherheitsrichtlinien, Incident-Response-Prozesse und Lieferantenbewertungen.</div>
+  <div class="info-h2">Beratungsstrategie</div>
+  <div class="info-box">NIS2 nicht als isoliertes Beratungsfeld aufbauen, sondern als Teil von <strong>"Unternehmensresilienz, Risikomanagement und digitale Betriebsfähigkeit"</strong> positionieren. Das spricht direkt und indirekt Betroffene an und öffnet deutlich mehr Türen.</div>
+  <div class="src-hint" style="margin-top:16px">Quelle: MD ID 796–798, Stand 03.06.2026</div>
+</div>
+
+<!-- MEINE ANALYSEN -->
+<div id="tab-saved" class="content" style="display:none">
+  <div class="finder-title">Meine gespeicherten Analysen</div>
+  <div class="finder-line"></div>
+  <div id="saved-list-container"><div class="saved-empty">Wird geladen …</div></div>
+</div>
+</div>
+
+<script>
+// ─── DATENBANK ───────────────────────────────────────────────────────────────
+// Single Source of Truth: Excel-Mastertabelle 260609_Alchimedus_Navigator_Master.xlsx
+// Stand: ALN-001 bis ALN-035, 09.06.2026
+// Neue Einträge: Tags aus Excel übernehmen → showRecs() passt sich automatisch an.
+const DB = [
+  // ── Akquise & Projektstart ──────────────────────────────────────────────
+  { id:"ALN-001", name:"Kurzanalyse-Bericht", tags:["akquise","erstgespraech"], bafa:"bedingt", inqa:"nein",
+    zweck:"Potenzielle Kunden gewinnen, Neugier wecken ohne das WIE zu verraten",
+    inhalt:"Beschreibung des Checks, Grafiken und Auswertungen, Kontaktaufforderung.",
+    hinweis:"Keine Umsetzungshilfen. Nicht als BAFA-Hauptnachweis.", quelle:"Newsletter 03.06.2026" },
+  { id:"ALN-002", name:"Schwachstellenbericht (mit ersten Empfehlungen)", tags:["kickoff","bafa","schwachstellen","akquise"], bafa:"ja", inqa:"bedingt",
+    zweck:"Erste Analyse und Projektstart, BAFA-Einstieg",
+    inhalt:"Identifikation erster Schwachstellen, erste Empfehlungen.",
+    hinweis:"Auch für Akquise nutzbar. BAFA-nachweisgeeignet.", quelle:"Newsletter 03.06.2026" },
+  { id:"ALN-003", name:"Zukunftsprojekte 24", tags:["kickoff","bafa","inqa","projekte"], bafa:"ja", inqa:"ja",
+    zweck:"Projektvorschläge beschreiben und strukturieren",
+    inhalt:"Beschreibt vorgeschlagene Projekte via Linear B. Aktivierte Aufgaben je Check-Frage.",
+    hinweis:"Im Rahmen der BAFA-Beratung nutzbar.", quelle:"Newsletter 03.06.2026" },
+  { id:"ALN-004", name:"QM-Bericht mit Maßnahmen", tags:["fortschritt","qm","nachweis"], bafa:"bedingt", inqa:"bedingt",
+    zweck:"Fortschritt dokumentieren, Umsetzung nachweisen",
+    inhalt:"Maßnahmen und Aufgaben pro Frage, Nachweise.",
+    hinweis:"Fortschrittsbericht / QM-Bericht.", quelle:"Newsletter 03.06.2026" },
+  { id:"ALN-005", name:"Konzept- und Handbuchbericht", tags:["abschluss","bafa","handbuch"], bafa:"ja", inqa:"bedingt",
+    zweck:"Konzeptabschluss, Zertifizierungen, offizielle Nachweise",
+    inhalt:"Entwickelte Prozesse, ggf. Nachweise. Keine Bewertung, keine Grafik.",
+    hinweis:"Keine Schwachstellennennung. Für Datenschutz-, QM-Handbuch etc.", quelle:"Newsletter 03.06.2026" },
+  // ── Kick-Off Fragebögen ─────────────────────────────────────────────────
+  { id:"ALN-006", name:"Unternehmensschwachstellenanalyse", tags:["kickoff","bafa","inqa","schwachstellen"], bafa:"ja", inqa:"ja",
+    zweck:"Sehr guter Einstieg in BAFA- und INQA-Projekte, allgemeine Ausgangslage",
+    inhalt:"Umfassende Schwachstellenanalyse als Ausgangsbasis.",
+    hinweis:"Empfohlen von Saskia Weisser / Rupert Bauer als starker BAFA-Einstieg.", quelle:"Gesprächsnotizen 02.06.2026" },
+  { id:"ALN-007", name:"Strategiehaus (Fragebogen Nr. 645)", tags:["kickoff","bafa","strategie"], bafa:"ja", inqa:"nein",
+    zweck:"Strategische Ausgangsposition klären, BAFA-Einstieg ohne Digitalisierungsfokus",
+    inhalt:"Strategieanalyse als Ausgangsbasis.",
+    hinweis:"Alternative: Fragebogen Nr. 9, wenn Digitalisierung + INQA absehbar.", quelle:"Gesprächsnotizen 02.06.2026" },
+  { id:"ALN-008", name:"Fragebogen Nr. 9", tags:["kickoff","bafa","inqa","digitalisierung"], bafa:"ja", inqa:"ja",
+    zweck:"Kick-Off wenn Digitalisierung und späteres INQA absehbar",
+    inhalt:"Ausgangsanalyse mit Digitalisierungsfokus, Grundlage für INQA-Projekte.",
+    hinweis:"Bevorzugen gegenüber Nr. 645, wenn Digitalisierung + INQA absehbar.", quelle:"Gesprächsnotizen 02.06.2026" },
+  { id:"ALN-009", name:"Potentialanalyse Nachfolge", tags:["nachfolge","m&a","kickoff","bafa"], bafa:"ja", inqa:"nein",
+    zweck:"Projektstart bei Nachfolgethemen",
+    inhalt:"Potentialanalyse für Nachfolgeprozesse.",
+    hinweis:"", quelle:"Gesprächsnotizen 02.06.2026" },
+  { id:"ALN-010", name:"PP3 – Persönlichkeitsanalyse", tags:["inqa","kickoff","persoenlichkeit"], bafa:"nein", inqa:"ja",
+    zweck:"Experteninterviews zu Beginn von INQA-Projekten",
+    inhalt:"Persönlichkeitsanalyse zur Kategorisierung von Gesprächspartnern.",
+    hinweis:"Auswertung kommentieren, um Verständlichkeit zu erhöhen.", quelle:"Gesprächsnotizen 02.06.2026" },
+  // ── KI / Digital ────────────────────────────────────────────────────────
+  { id:"ALN-011", name:"ID 796 – KI-Authority-Check", tags:["ki","digital","sichtbarkeit"], bafa:"bedingt", inqa:"nein",
+    zweck:"KI-Sichtbarkeit und digitale Autorität eines KMU analysieren",
+    inhalt:"Entitätenklarheit, Themenfokus, Fachsubstanz, externe Präsenz, reale KI-Sichtbarkeit. Ergebnis: Handlungsplan. 42 Fragen.",
+    hinweis:"Für KMU, die in KI-Systemen wie ChatGPT/Copilot kaum sichtbar sind.", quelle:"MD ID 796, 03.06.2026" },
+  { id:"ALN-012", name:"ID 797 – Digitale Toolnutzung 10", tags:["ki","digital","tools","governance"], bafa:"ja", inqa:"bedingt",
+    zweck:"Vollständige Tool-Landschafts-Analyse, IT-Governance, Kostenoptimierung",
+    inhalt:"Tool-Verzeichnis, Zufriedenheitsbewertungen, priorisierte Handlungsempfehlungen für 12 Monate.",
+    hinweis:"Basis für Change Management und strategische Investitionen.", quelle:"MD ID 797, 03.06.2026" },
+  { id:"ALN-013", name:"ID 798 – Digitale Toolnutzung (Ultralight)", tags:["ki","digital","tools"], bafa:"bedingt", inqa:"nein",
+    zweck:"Schneller Überblick Tool-Landschaft, Einstieg Digitalisierung",
+    inhalt:"Vier Kernbereiche: Produktivität & Zusammenarbeit, Geschäftssoftware, Automatisierung & Marketing, KI-Tools.",
+    hinweis:"Leichtere Variante zu ID 797.", quelle:"MD ID 798, 03.06.2026" },
+  { id:"ALN-014", name:"PA Digital Transformation 4.0 KMU (60 Fragen)", tags:["kickoff","inqa","bafa","digitalisierung","transformation"], bafa:"ja", inqa:"ja",
+    zweck:"Umfassende Potenzialanalyse digitale Transformation, INQA-Einstieg",
+    inhalt:"Drei Dimensionen: Strukturkraft (20), Aufbruchkraft (20), Gemeinschaftskraft (20). Performance Index, Ampelsystem. Alchimedus Drei-Kräfte-Modell (180 Erfolgsstudien, 10.000+ Interviews).",
+    hinweis:"Abgestimmt auf INQA-Rahmenwerk. Einsatz als Einzelberatung, Workshop oder Mitarbeiterbefragung.", quelle:"Booster-Report PDF, 11.05.2026" },
+  // ── Vertrieb / Marketing ────────────────────────────────────────────────
+  { id:"ALN-015", name:"ID 336 / 374 / 559 – Vertriebssteuerung mit System! (3 Varianten)", tags:["vertrieb","sales","controlling","leads","qm","automatisierung"], bafa:"bedingt", inqa:"nein",
+    zweck:"Drei Varianten (12 Fragen, 5 Dimensionen). ID 336: Basischeck. ID 374: Abweichende Formulierungen. ID 559: Automatisierungsfokus.",
+    inhalt:"Strukturaufbau, Leadentwicklung, Angebotsprozess, Controlling, Vertriebsforecast. Performance Index, Ampelsystem, Balkendiagramm. QM-Vorlagen.",
+    hinweis:"ID 336 für Erstcheck, ID 374 als Alternative, ID 559 wenn Automatisierung im Fokus.", quelle:"Booster-Report PDF, 09.06.2026" },
+  { id:"ALN-019", name:"ID 526 – Leadgenerierung X4 – mit System!", tags:["vertrieb","leads","leadmanagement","akquise","marketing","sales"], bafa:"bedingt", inqa:"nein",
+    zweck:"Strukturiertes Leadmanagement aufbauen: Identifikation, Ansprache und Konvertierung von Leads",
+    inhalt:"Führt durch alle Kriterien erfolgreichen Leadmanagements. Bewährte Methoden zur Maximierung der Erfolgschancen. 31 Fragen.",
+    hinweis:"Reduziert Komplexität der Leadgenerierung. Fokus auf nachhaltige Gewinnung und Bindung neuer Kunden.", quelle:"Fragebogen-Beschreibung, 09.06.2026" },
+  { id:"ALN-020", name:"ID 640 – Digitale Markterschließung D2C Digital Performance!", tags:["digital","marketing","d2c","leads","social-media","crm","automatisierung"], bafa:"bedingt", inqa:"nein",
+    zweck:"Digitale Kanäle zur Markterschließung und Kundengewinnung systematisch nutzen und bewerten",
+    inhalt:"Social Media, automatisierte Sales Funnels, DSGVO, Apps, Terminvergabe, Online-Community, Content, CRM, Online-Shop, Newsletter, Datenauswertung. 20 Fragen.",
+    hinweis:"Empfohlen für Unternehmen, die digitale Präsenz stärken und Kunden über digitale Kanäle gewinnen wollen.", quelle:"Fragebogen-Beschreibung, 09.06.2026" },
+  { id:"ALN-032", name:"ID 672 – Digitales Marketing", tags:["marketing","digital","online","strategie","vertrieb"], bafa:"bedingt", inqa:"nein",
+    zweck:"Digitales Marketing-Verständnis und -Strategien erfassen, Handlungsempfehlungen ableiten",
+    inhalt:"Erfasst aktuelles Verständnis und Strategien im digitalen Marketing. Grundlage für individuelle Beratung. 20 Fragen.",
+    hinweis:"Antworten vertraulich, dienen als Beratungsgrundlage.", quelle:"Fragebogen-Beschreibung, 09.06.2026" },
+  // ── Nachfolge / M&A ─────────────────────────────────────────────────────
+  { id:"ALN-021", name:"Alchimedus Value Check (Unternehmensbewertung)", tags:["nachfolge","m&a","unternehmensbewertung","exit"], bafa:"nein", inqa:"nein",
+    zweck:"Unternehmenswert ermitteln für Übernahme, Verkauf, Fusion oder Kapitalerhöhung",
+    inhalt:"Multiplikatorenverfahren auf Basis EBIT/EBITDA, Branchenmultiplikator, relative Stärke. 36 Fragen.",
+    hinweis:"Ergebnis unverbindlich, ohne Gewähr. Stark abhängig von Eingabedaten und Marktsituation.", quelle:"Fragebogen-Beschreibung, 09.06.2026" },
+  // ── KI / Compliance ─────────────────────────────────────────────────────
+  { id:"ALN-027", name:"ID 757 – KI-Compliance-Check (KAI AI Rahmen)", tags:["ki","compliance","datenschutz","governance"], bafa:"bedingt", inqa:"nein",
+    zweck:"KI-Einsatz rechtssicher, kontrolliert und effizient gestalten",
+    inhalt:"Prüft Verträge, Prozesse, Schulungen und Verantwortlichkeiten für KI-Einsatz. Schützt vor Datenschutzverletzungen. Unterstützt ISO- und Auditfähigkeit. 11 Fragen.",
+    hinweis:"Ermöglicht gut gesteuerte KI-Einführung. Verhindert hohe Korrekturkosten.", quelle:"Fragebogen-Beschreibung, 09.06.2026" },
+  { id:"ALN-029", name:"ID 689 – KI-Geschäftsmodelle entwickeln (Business Model Canvas)", tags:["ki","geschaeftsmodell","strategie","innovation"], bafa:"bedingt", inqa:"nein",
+    zweck:"KI-gestützte Geschäftsmodelle analysieren und entwickeln, Ertragskraft verbessern",
+    inhalt:"Analyse anhand Business Model Canvas (Osterwalder). KI-Optimierungspotenziale je Baustein. 10 Fragen.",
+    hinweis:"Fokus auf rentable, zukunftssichere Geschäftsmodelle.", quelle:"Fragebogen-Beschreibung, 09.06.2026" },
+  { id:"ALN-031", name:"ID 685 – AI Act Kurzcheck", tags:["ki","compliance","aiact","regulierung","datenschutz"], bafa:"bedingt", inqa:"nein",
+    zweck:"EU AI Act Risikoklassen verstehen und eigene KI-Nutzung einordnen",
+    inhalt:"Prüft KI-Anwendungen anhand der 4 Risikoklassen des EU AI Act. Transparenzpflichten, Sanktionen. 8 Fragen.",
+    hinweis:"Kompakter Einstieg in KI-Regulierung. Für Orientierung ohne tiefen Rechtsauftrag.", quelle:"Fragebogen-Beschreibung, 09.06.2026" },
+  { id:"ALN-033", name:"ID 659 – KI-Check für mittelständische Unternehmen", tags:["ki","mittelstand","digitalisierung","prozesse","innovation"], bafa:"bedingt", inqa:"nein",
+    zweck:"KI-Einsatzmöglichkeiten im Betrieb analysieren, Handlungsempfehlungen ableiten",
+    inhalt:"Analyse konkreter KI-Anwendungsszenarien: Produktentwicklung, Prozessoptimierung, Markterschließung, Kundenservice. 28 Fragen.",
+    hinweis:"Stärkt Wettbewerbsfähigkeit und Zukunftsfähigkeit. Aufbau internen KI-Know-hows.", quelle:"Fragebogen-Beschreibung, 09.06.2026" },
+  { id:"ALN-035", name:"ID 647 – KI im Unternehmen: Potenziale entdecken!", tags:["ki","potenzial","digitalisierung","automatisierung","akquise"], bafa:"bedingt", inqa:"nein",
+    zweck:"KI-Reife bestimmen, konkrete Anwendungsmöglichkeiten aufzeigen, erste Schritte definieren",
+    inhalt:"Kompakte KI-Standortbestimmung: Prozessautomatisierung, Datenanalyse, Kundenerlebnisse. Fortschritt messbar durch Wiederholung. 13 Fragen.",
+    hinweis:"Für Unternehmen mit begrenzten Budgets. Erleichtert Kommunikation gegenüber Banken und Fördergebern.", quelle:"Fragebogen-Beschreibung, 09.06.2026" },
+  // ── Akquise: KI/BAFA-Einstieg ───────────────────────────────────────────
+  { id:"ALN-028", name:"ID 710 – Förderpotenzial 12", tags:["bafa","inqa","foerderung","akquise"], bafa:"ja", inqa:"ja",
+    zweck:"Förderpotenzial von BAFA und INQA einschätzen und nutzen",
+    inhalt:"Bewertet wie gut Unternehmen BAFA- und INQA-Fördermöglichkeiten kennen, nutzen und integrieren. 12 Fragen.",
+    hinweis:"Ideal als Einstiegsinstrument zur Fördermittelberatung.", quelle:"Fragebogen-Beschreibung, 09.06.2026" },
+  // ── KI-spezifische Akquise-Checks ───────────────────────────────────────
+  { id:"ALN-030", name:"ID 748 – PA Strategiehaus in Zeiten von KI (60 Fragen)", tags:["kickoff","bafa","inqa","ki","strategie","digital","transformation"], bafa:"ja", inqa:"ja",
+    zweck:"Digitale Transformation mit KI-Fokus analysieren, Strategiehaus entwickeln",
+    inhalt:"60 Fragen auf KI-Zeitalter ausgerichtet. Drei Kräfte: Visionäre Führung, motivierte Mitarbeitende, effiziente Prozesse. Digitale Transformationsampel.",
+    hinweis:"KI-spezifische Variante des Strategiehauses. Ergänzend: Buch \"Digitale Transformation mit System!\".", quelle:"Fragebogen-Beschreibung, 09.06.2026" },
+  { id:"ALN-034", name:"ID 648 – Digitaler Wandel – INQA-Handlungsfelder", tags:["inqa","digital","digitalisierung","handlungsfelder","strategie","kickoff"], bafa:"bedingt", inqa:"ja",
+    zweck:"Digitalen Fortschritt anhand INQA-Handlungsfelder analysieren, Stärken und Schwächen identifizieren",
+    inhalt:"Umfassende Untersuchung der INQA-Handlungsfelder im digitalen Wandel. Grundlage für gezielte Maßnahmen. 11 Fragen.",
+    hinweis:"Fördert nachhaltige Wettbewerbsfähigkeit im digitalen Zeitalter. INQA-konform.", quelle:"Fragebogen-Beschreibung, 09.06.2026" },
+  // ── Potenzialanalysen (Drei-Kräfte-Modell) ──────────────────────────────
+  { id:"ALN-022", name:"ID 3 – PA Potenzialanalyse 1-Personen-Unternehmen (60 Fragen)", tags:["kickoff","bafa","inqa","potenzialanalyse","einzelunternehmen"], bafa:"ja", inqa:"ja",
+    zweck:"Entwicklungsmöglichkeiten von Einzelunternehmen entdecken, Zukunftsprojekte entwickeln",
+    inhalt:"3×20 Alchimedus-Befähigerfragen (Drei-Kräftemodell). Basis für Strategie-Haus-Entwicklung.",
+    hinweis:"Für 1-Personen-Unternehmen optimiert.", quelle:"Fragebogen-Beschreibung, 09.06.2026" },
+  { id:"ALN-023", name:"ID 4 – PA Potenzialanalyse Rentabilitätsverbesserung (60 Fragen)", tags:["kickoff","bafa","inqa","rentabilitaet","potenzialanalyse"], bafa:"ja", inqa:"ja",
+    zweck:"Kostenführerschaft und Rentabilität verbessern, Entwicklungsmöglichkeiten entdecken",
+    inhalt:"3×20 Alchimedus-Befähigerfragen, angepasst auf Rentabilitätsverbesserung.",
+    hinweis:"Fokus Kostenführerschaft / Rentabilität.", quelle:"Fragebogen-Beschreibung, 09.06.2026" },
+  { id:"ALN-024", name:"ID 8 – PA BGM Betriebliches Gesundheitsmanagement (60 Fragen)", tags:["kickoff","bafa","inqa","bgm","gesundheit","hr","mitarbeiterbefragung"], bafa:"ja", inqa:"ja",
+    zweck:"BGM-Einstieg: Gesundheitspotenziale und zwischenmenschliche Themen erfassen",
+    inhalt:"3×20 Alchimedus-Befähigerfragen, angepasst auf BGM. Entdeckt zwischenmenschliche Ursachen für Change-Probleme.",
+    hinweis:"Für BGM-Einsteiger. Ergänzend: Buch \"Gesunde Unternehmen\".", quelle:"Fragebogen-Beschreibung, 09.06.2026" },
+  { id:"ALN-025", name:"ID 5 – PA Risk und Rating KMU (60 Fragen)", tags:["kickoff","bafa","inqa","risiko","risikomanagement","potenzialanalyse"], bafa:"ja", inqa:"ja",
+    zweck:"Risikomanagement analysieren, Schadensfälle vermeiden, Entwicklungsmöglichkeiten entdecken",
+    inhalt:"3×20 Alchimedus-Befähigerfragen, angepasst auf Risikomanagement.",
+    hinweis:"Ergänzend: Buch \"Top Performance in der Geschäftsführung\".", quelle:"Fragebogen-Beschreibung, 09.06.2026" },
+  { id:"ALN-026", name:"ID 12 – PA Personalentwicklung Basis (60 Fragen)", tags:["kickoff","bafa","inqa","hr","personalentwicklung","mitarbeiterbefragung"], bafa:"ja", inqa:"ja",
+    zweck:"Personalarbeit weiterentwickeln, HR-Potenziale entdecken",
+    inhalt:"3×20 Alchimedus-Befähigerfragen, angepasst auf Personalentwicklung.",
+    hinweis:"Entwickelt im Rahmen eines HR-Projektes mit internationalem Pharmakonzern.", quelle:"Fragebogen-Beschreibung, 09.06.2026" },
+  // ── Services / Kooperationen ────────────────────────────────────────────
+  { id:"SVC-001", name:"DFKP – Deutsche Firmenkredit Partner", type:"SERVICE",
+    tags:["finanzierung","dfkp","kredit","foerderung"],
+    bafa:"nein", inqa:"nein",
+    zweck:"Schnelle, strukturierte Finanzierungslösungen über 200+ Banken und Spezialfinanzierer – effizienter als klassische Hausbankprozesse",
+    inhalt:"Die DFKP übernimmt die strukturierte Aufbereitung, Bankenansprache und Begleitung bis zur Kreditzusage. Ihr begleitet den Kunden beratend – ohne selbst aufwändige Bankprozesse zu managen.",
+    hinweis:"Provision: 1 % des Finanzierungsvolumens, davon 0,75 % direkt an Euch als Netzwerkpartner. Praxisbeispiel: 3 Projekte · 330.000 € Darlehenssumme erfolgreich abgeschlossen.",
+    kontakt:"Interesse? Direkt ans Alchimedus Team wenden – Unterstützung beim Onboarding inklusive.",
+    quelle:"Netzwerk-Newsletter, 09.06.2026" },
+  // ── HR / Mitarbeiterbefragung ────────────────────────────────────────────
+  { id:"ALN-018", name:"ID 791 – Psychische Gefährdungsbeurteilung inkl. Homeoffice", tags:["kickoff","inqa","hr","homeoffice","mitarbeiterbefragung","fuehrung"], bafa:"bedingt", inqa:"ja",
+    zweck:"Psychische Belastungen am Arbeitsplatz gesetzeskonform erfassen; Arbeitsbedingungen nachhaltig gestalten",
+    inhalt:"Erfasst psychische Belastungen (Pflicht seit 2013) sowie Motivation, Zusammenarbeit, Führung, Engagement, mobiles Arbeiten. 40 Fragen.",
+    hinweis:"Geht über gesetzliche Mindestanforderungen hinaus.", quelle:"Fragebogen-Beschreibung, 09.06.2026" }
+];
+
+// ─── SITUATIONSFILTER ────────────────────────────────────────────────────────
+// Tag-basiert: neue DB-Einträge mit richtigen Tags erscheinen automatisch.
+const SIT = {
+  akquise:  b => b.tags.some(t => ['akquise','erstgespraech','foerderung'].includes(t)),
+  kickoff:  b => b.tags.includes('kickoff'),
+  zwisch:   b => b.tags.some(t => ['fortschritt','qm','nachweis'].includes(t)),
+  abschluss:b => b.tags.includes('abschluss'),
+  nachfolge:b => b.tags.some(t => ['nachfolge','m&a','exit','unternehmensbewertung'].includes(t)),
+  ki:       b => b.tags.some(t => ['ki','digital','digitalisierung','aiact','transformation'].includes(t)),
+  vertrieb:    b => b.tags.some(t => ['vertrieb','sales','leads','leadmanagement','marketing'].includes(t)),
+  finanzierung:b => b.tags.some(t => ['finanzierung','dfkp','kredit'].includes(t))
+};
+
+const st = { sit:null, foerd:null, ma:null, um:null, br:null };
+let currentPool = [];
+
+function pick(k,v,btn) {
+  st[k]=v;
+  btn.closest('.option-grid').querySelectorAll('.opt-btn').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  update();
+}
+
+function update() {
+  const sf=document.getElementById('st-foerd');
+  const sn=document.getElementById('st-nis2');
+  if(st.sit){ sf.style.display='block'; }
+  if(st.sit==='ki'||st.sit==='kickoff'){ sn.style.display='block'; } else { sn.style.display='none'; st.ma=null;st.um=null;st.br=null; }
+  if(st.ma&&st.um&&st.br) checkNIS2();
+  if(st.sit&&st.foerd) showRecs();
+}
+
+function checkNIS2() {
+  const krit=['energie','gesundheit','transport','it','finanzen','lebensmittel','produktion'];
+  const bkrit=krit.includes(st.br);
+  const gross=['50bis249','250plus'].includes(st.ma);
+  const humsatz=['10bis50','50plus'].includes(st.um);
+  let niv='nein';
+  if(bkrit&&(gross||humsatz)) niv='direkt';
+  else if(bkrit||gross||humsatz) niv='indirekt';
+  const w=document.getElementById('nis2-warn');
+  const d=document.getElementById('nis2-detail');
+  if(niv==='nein'){w.classList.remove('on');d.classList.remove('on');return;}
+  w.classList.add('on'); d.classList.add('on');
+  const wt=document.getElementById('nis2-warn-text');
+  const dl=document.getElementById('nis2-detail-list');
+  if(niv==='direkt'){
+    wt.innerHTML='<strong>Direkte NIS2-Betroffenheit wahrscheinlich.</strong> Branche und Unternehmensgröße deuten auf eine Einstufung als wesentliche oder wichtige Einrichtung hin. NIS2-Compliance sollte Teil der Beratungsagenda werden.';
+    dl.innerHTML='<li>NIS2-Betroffenheit ansprechen und gemeinsam mit dem Kunden prüfen</li><li>Risikomanagement und Governance als Thema einbeziehen</li><li>Meldepflichten und Incident-Response-Prozesse klären</li><li>Lieferantenmanagement und Schulungen auf NIS2-Niveau besprechen</li><li>NIS2 als Teil von "Unternehmensresilienz & digitale Betriebsfähigkeit" positionieren</li>';
+  } else {
+    wt.innerHTML='<strong>Indirekte NIS2-Relevanz möglich.</strong> Das Unternehmen fällt vermutlich nicht direkt unter NIS2, wird aber von größeren Kunden oder Partnern zunehmend mit Sicherheitsanforderungen konfrontiert.';
+    dl.innerHTML='<li>Lieferketten-Anforderungen ansprechen: MFA, Datenschutz, Notfallplan</li><li>Prüfen, ob Kunden aus regulierten Branchen Sicherheitsfragebögen verlangen</li><li>Basics zeigen: Passwortmanager, Backups, verschlüsselte Endgeräte</li><li>NIS2 als Türöffner für Digitalisierungs- und Resilienz-Beratung nutzen</li>';
+  }
+}
+
+function showRecs() {
+  const s=st.sit, f=st.foerd;
+  let pool = DB.filter(SIT[s] || (()=>false));
+
+  // Förderfilter
+  if(f==='bafa') pool = pool.filter(b=>b.bafa==='ja');
+  else if(f==='inqa') pool = pool.filter(b=>b.inqa==='ja');
+  // kein / offen: kein Zusatzfilter
+
+  // NIS2-Boost: bei kritischer Branche digitale Tools ergänzen
+  const krit=['energie','gesundheit','transport','it','finanzen','lebensmittel','produktion'];
+  if(st.br && krit.includes(st.br)){
+    DB.filter(b=>b.tags.some(t=>['ki','digital'].includes(t))).forEach(b=>{if(!pool.includes(b)) pool.push(b);});
+  }
+
+  // SERVICE-Einträge immer ergänzen (bypassen Förderfilter)
+  DB.filter(b => b.type==='SERVICE' && SIT[s] && SIT[s](b))
+    .forEach(b => { if(!pool.includes(b)) pool.push(b); });
+
+  pool=[...new Set(pool)];
+  currentPool = pool;
+  const nis2on=document.getElementById('nis2-warn').classList.contains('on');
+  const sec=document.getElementById('results');
+  const lst=document.getElementById('results-list');
+  sec.classList.add('on'); lst.innerHTML='';
+  document.getElementById('download-bar').style.display = pool.length ? 'block' : 'none';
+
+  if(pool.length===0){
+    lst.innerHTML='<div style="color:var(--mittelgrau);font-size:13px;padding:12px 0">Für diese Kombination noch keine Empfehlung hinterlegt.</div>';
+    return;
+  }
+
+  pool.forEach((b,i)=>{
+    const isSvc = b.type==='SERVICE';
+    const card=document.createElement('div');
+    card.className='report-card'+(isSvc?' svc':i===0?' prim':'');
+    const idBadge=`<span style="font-size:10px;color:var(--mittelgrau);margin-left:6px">${b.id}</span>`;
+    const primBadge = !isSvc&&i===0 ? '<span class="badge b-prim">Empfohlen</span>' : '';
+    const svcBadge  = isSvc ? '<span class="badge b-svc">Service / Kooperation</span>' : '';
+    const bafaBadge = b.bafa==='ja' ? '<span class="badge b-bafa">BAFA</span>' : '';
+    const inqaBadge = b.inqa==='ja' ? '<span class="badge b-inqa">INQA</span>' : '';
+    const nis2Badge = nis2on&&b.tags.some(t=>['ki','digital'].includes(t)) ? '<span class="badge b-nis2">NIS2-Kontext</span>' : '';
+    card.innerHTML=`<div class="report-header"><div class="report-name">${b.name}${idBadge}</div><div class="badges">${primBadge}${svcBadge}${bafaBadge}${inqaBadge}${nis2Badge}</div></div><div class="report-zweck">${b.zweck}</div><div class="report-inhalt">${b.inhalt}</div>${b.hinweis?`<div class="report-hinweis">${b.hinweis}</div>`:''}${b.kontakt?`<div class="report-kontakt">${b.kontakt}</div>`:''}<div class="src-hint">Quelle: ${b.quelle}</div>`;
+    lst.appendChild(card);
+  });
+}
+
+function resetF() {
+  Object.keys(st).forEach(k=>st[k]=null);
+  document.querySelectorAll('.opt-btn').forEach(b=>b.classList.remove('sel'));
+  document.getElementById('st-foerd').style.display='none';
+  document.getElementById('st-nis2').style.display='none';
+  document.getElementById('nis2-warn').classList.remove('on');
+  document.getElementById('nis2-detail').classList.remove('on');
+  document.getElementById('results').classList.remove('on');
+  document.getElementById('results-list').innerHTML='';
+  document.getElementById('download-bar').style.display='none';
+  document.getElementById('kundenname-input').value='';
+  currentPool=[];
+}
+
+// ─── EXPORT ──────────────────────────────────────────────────────────────────
+const SIT_LABEL = {
+  akquise:'Akquise / Erstkontakt', kickoff:'Kick-Off / Projektstart',
+  zwisch:'Laufendes Projekt', abschluss:'Konzeptabschluss',
+  nachfolge:'Nachfolge / M&A', ki:'KI / Digitalisierung', vertrieb:'Vertrieb / Marketing'
+};
+const FOERD_LABEL = { bafa:'BAFA', inqa:'INQA', kein:'Kein Förderprogramm', offen:'Noch offen' };
+
+function getKunde()  { return document.getElementById('kundenname-input').value.trim() || 'Kein Kundenname angegeben'; }
+function getDoktyp() { return document.getElementById('doktyp-select').value; }
+
+function downloadMD() {
+  const kunde  = getKunde();
+  const doktyp = getDoktyp();
+  const datum  = new Date().toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+  const lines = [
+    `# ${doktyp} – ${kunde}`,
+    '',
+    `**Kunde:** ${kunde}`,
+    `**Dokument:** ${doktyp}`,
+    `**Datum:** ${datum}`,
+    '',
+    '---',
+    ''
+  ];
+  currentPool.forEach((b,i) => {
+    lines.push(`## ${i+1}. ${b.name}`);
+    lines.push(`*${b.id} · Quelle: ${b.quelle}*`);
+    lines.push('');
+    lines.push(`**Einsatzzweck:** ${b.zweck}`);
+    lines.push('');
+    lines.push(`**Inhalte:** ${b.inhalt}`);
+    if (b.hinweis) { lines.push(''); lines.push(`**Hinweis:** ${b.hinweis}`); }
+    lines.push('');
+    lines.push(`BAFA: ${b.bafa}  |  INQA: ${b.inqa}`);
+    lines.push('');
+    lines.push('---');
+    lines.push('');
+  });
+  lines.push(`*Erstellt mit Alchimedus Navigator · be nice Organisationsberatung · ${datum}*`);
+  const blob = new Blob([lines.join('\n')], {type:'text/markdown;charset=utf-8'});
+  const url  = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${doktyp.replace(/\s+/g,'_')}_${kunde.replace(/[^a-zA-Z0-9äöüÄÖÜß]/g,'_')}_${datum.replace(/\./g,'-')}.md`;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(url), 1000);
+}
+
+function downloadPDF() {
+  const kunde   = getKunde();
+  const doktyp  = getDoktyp();
+  const fussL   = `${doktyp} · ${kunde}`;
+
+  // @page CSS dynamisch mit Kundendaten befüllen
+  const old = document.getElementById('_print_css');
+  if (old) old.remove();
+  const s = document.createElement('style');
+  s.id = '_print_css';
+  // CSS-Strings escapen (Anführungszeichen neutralisieren)
+  const safeFL = fussL.replace(/"/g,'\\"').replace(/\\/g,'\\\\');
+  s.textContent = `
+    @page {
+      size: A4 portrait;
+      margin: 18mm 14mm 24mm 14mm;
+    }
+    @page {
+      @bottom-left {
+        content: "${safeFL}";
+        font-size: 8pt;
+        color: #777777;
+        font-family: Calibri, 'Segoe UI', sans-serif;
+      }
+      @bottom-right {
+        content: counter(page) " / " counter(pages);
+        font-size: 8pt;
+        color: #777777;
+        font-family: Calibri, 'Segoe UI', sans-serif;
+      }
+    }
+  `;
+  document.head.appendChild(s);
+  window.print();
+  window.addEventListener('afterprint', () => s.remove(), {once:true});
+}
+
+function filt(f,btn) {
+  document.querySelectorAll('.fchip').forEach(c=>c.classList.remove('on'));
+  btn.classList.add('on');
+  renderDB(f);
+}
+
+function renderDB(f) {
+  const tb=document.getElementById('db-tbody'); tb.innerHTML='';
+  let data;
+  if(f==='alle') data=DB;
+  else if(f==='bafa') data=DB.filter(b=>b.bafa==='ja');
+  else if(f==='inqa') data=DB.filter(b=>b.inqa==='ja');
+  else data=DB.filter(b=>SIT[f] ? SIT[f](b) : b.tags.includes(f));
+  data.forEach(b=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><strong>${b.name}</strong><br><span class="src-hint">${b.id} · ${b.quelle}</span></td><td>${b.zweck}</td><td><span class="pill ${b.bafa==='ja'?'pj':b.bafa==='bedingt'?'pb':'pn'}">${b.bafa==='ja'?'ja':b.bafa==='bedingt'?'bed.':'nein'}</span></td><td><span class="pill ${b.inqa==='ja'?'pj':b.inqa==='bedingt'?'pb':'pn'}">${b.inqa==='ja'?'ja':b.inqa==='bedingt'?'bed.':'nein'}</span></td><td>${b.hinweis||'–'}</td>`;
+    tb.appendChild(tr);
+  });
+}
+
+function showTab(t,btn) {
+  ['finder','db','nis2','saved'].forEach(id=>{ document.getElementById('tab-'+id).style.display=id===t?'block':'none'; });
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(t==='db') renderDB('alle');
+  if(t==='saved') loadSaved();
+}
+
+// ─── AUTH ────────────────────────────────────────────────────────────────────
+let authMode = 'login';
+let currentUser = null;
+
+function switchAuth(mode) {
+  authMode = mode;
+  document.getElementById('tab-login-btn').classList.toggle('active', mode==='login');
+  document.getElementById('tab-register-btn').classList.toggle('active', mode==='register');
+  document.getElementById('field-name').style.display = mode==='register' ? 'block' : 'none';
+  document.getElementById('auth-submit').textContent = mode==='register' ? 'Konto erstellen' : 'Anmelden';
+  document.getElementById('auth-password').autocomplete = mode==='register' ? 'new-password' : 'current-password';
+  setAuthMsg('');
+}
+
+function setAuthMsg(text, ok) {
+  const el = document.getElementById('auth-msg');
+  el.textContent = text;
+  el.className = 'auth-msg' + (text ? (ok ? ' ok' : ' err') : '');
+}
+
+async function submitAuth(e) {
+  e.preventDefault();
+  const btn = document.getElementById('auth-submit');
+  const email = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  const name = document.getElementById('auth-name').value.trim();
+  btn.disabled = true; setAuthMsg('');
+  try {
+    const endpoint = authMode==='register' ? '/api/auth/register' : '/api/auth/login';
+    const res = await fetch(endpoint, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(authMode==='register' ? {email,password,name} : {email,password})
+    });
+    const data = await res.json();
+    if(!res.ok){ setAuthMsg(data.error || 'Fehler bei der Anmeldung.'); btn.disabled=false; return false; }
+    currentUser = data.user;
+    enterApp();
+  } catch {
+    setAuthMsg('Verbindungsfehler. Bitte erneut versuchen.');
+  }
+  btn.disabled = false;
+  return false;
+}
+
+function enterApp() {
+  document.getElementById('auth-overlay').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  document.getElementById('user-name').textContent = currentUser.name || currentUser.email;
+}
+
+async function doLogout() {
+  try { await fetch('/api/auth/logout', {method:'POST'}); } catch {}
+  currentUser = null;
+  document.getElementById('app').classList.add('hidden');
+  document.getElementById('auth-overlay').classList.remove('hidden');
+  document.getElementById('auth-password').value = '';
+  setAuthMsg('');
+}
+
+async function checkSession() {
+  // Reset-Link aufgerufen? Dann direkt das Reset-Formular zeigen.
+  const params = new URLSearchParams(window.location.search);
+  const resetToken = params.get('reset');
+  if(resetToken){ resetTokenValue = resetToken; showReset(); return; }
+  try {
+    const res = await fetch('/api/auth/me');
+    if(res.ok){ const d = await res.json(); if(d.user){ currentUser = d.user; enterApp(); return; } }
+  } catch {}
+  // nicht angemeldet → Overlay bleibt sichtbar
+}
+
+// ─── PASSWORT VERGESSEN / ZURÜCKSETZEN ──────────────────────────────────────
+let resetTokenValue = null;
+
+// Schaltet zwischen den Ansichten im Login-Overlay um.
+function showAuthView(view) {
+  const isLogin = view==='login';
+  document.querySelector('.auth-tabs').classList.toggle('hidden', !isLogin);
+  document.getElementById('auth-form').classList.toggle('hidden', !isLogin);
+  document.getElementById('forgot-link').classList.toggle('hidden', !isLogin);
+  document.getElementById('forgot-form').classList.toggle('hidden', view!=='forgot');
+  document.getElementById('reset-form').classList.toggle('hidden', view!=='reset');
+}
+
+function showForgot(){ setAuthMsg(''); document.getElementById('forgot-msg').textContent=''; showAuthView('forgot'); }
+function showReset(){ document.getElementById('reset-msg').textContent=''; showAuthView('reset'); }
+function backToLogin(){
+  // Reset-Parameter aus der URL entfernen, damit ein Reload normal anmeldet.
+  if(resetTokenValue){ history.replaceState(null,'',window.location.pathname); resetTokenValue=null; }
+  switchAuth('login'); showAuthView('login');
+}
+
+function setMsg(id, text, ok){
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = 'auth-msg' + (text ? (ok ? ' ok' : ' err') : '');
+}
+
+async function submitForgot(e){
+  e.preventDefault();
+  const btn = document.getElementById('forgot-submit');
+  const email = document.getElementById('forgot-email').value.trim();
+  btn.disabled = true; setMsg('forgot-msg','');
+  try {
+    const res = await fetch('/api/auth/forgot', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({email})
+    });
+    const data = await res.json();
+    if(res.ok){ setMsg('forgot-msg', data.message || 'E-Mail versendet, falls das Konto existiert.', true); }
+    else { setMsg('forgot-msg', data.error || 'Fehler.'); }
+  } catch { setMsg('forgot-msg','Verbindungsfehler.'); }
+  btn.disabled = false;
+  return false;
+}
+
+async function submitReset(e){
+  e.preventDefault();
+  const btn = document.getElementById('reset-submit');
+  const password = document.getElementById('reset-password').value;
+  btn.disabled = true; setMsg('reset-msg','');
+  try {
+    const res = await fetch('/api/auth/reset', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({token:resetTokenValue, password})
+    });
+    const data = await res.json();
+    if(res.ok){
+      setMsg('reset-msg', (data.message||'Passwort aktualisiert.')+' Weiterleitung …', true);
+      setTimeout(()=>backToLogin(), 1600);
+    } else { setMsg('reset-msg', data.error || 'Fehler.'); }
+  } catch { setMsg('reset-msg','Verbindungsfehler.'); }
+  btn.disabled = false;
+  return false;
+}
+
+// ─── PERSISTENZ: ANALYSEN SPEICHERN / LADEN ─────────────────────────────────
+async function saveAnalysis(btn) {
+  if(!currentPool.length){ return; }
+  const original = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Speichert …';
+  try {
+    const res = await fetch('/api/analyses', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        kunde: getKunde(), doktyp: getDoktyp(),
+        situation: SIT_LABEL[st.sit] || st.sit,
+        foerderung: FOERD_LABEL[st.foerd] || st.foerd,
+        payload: currentPool.map(b=>({id:b.id,name:b.name,zweck:b.zweck,quelle:b.quelle}))
+      })
+    });
+    if(res.ok){ btn.textContent = '✓ Gespeichert'; }
+    else { const d=await res.json(); btn.textContent = d.error || 'Fehler'; }
+  } catch { btn.textContent = 'Fehler'; }
+  setTimeout(()=>{ btn.textContent = original; btn.disabled = false; }, 1800);
+}
+
+async function loadSaved() {
+  const c = document.getElementById('saved-list-container');
+  c.innerHTML = '<div class="saved-empty">Wird geladen …</div>';
+  try {
+    const res = await fetch('/api/analyses');
+    if(!res.ok){ c.innerHTML='<div class="saved-empty">Bitte erneut anmelden.</div>'; return; }
+    const { analyses } = await res.json();
+    if(!analyses.length){ c.innerHTML='<div class="saved-empty">Noch keine Analysen gespeichert. Im Berichts-Finder ein Ergebnis erzeugen und auf „Speichern" klicken.</div>'; return; }
+    c.innerHTML = '';
+    analyses.forEach(a=>{
+      const datum = new Date(a.created_at).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+      const items = (a.payload||[]).map(p=>`• ${p.name} <span style="color:var(--mittelgrau)">(${p.id})</span>`).join('<br>');
+      const div = document.createElement('div');
+      div.className = 'saved-card';
+      div.innerHTML = `<div class="saved-head">
+          <div>
+            <div class="saved-title">${esc(a.kunde||'Ohne Kundenname')}</div>
+            <div class="saved-meta">${esc(a.doktyp||'')} · ${esc(a.situation||'')}${a.foerderung?' · '+esc(a.foerderung):''} · ${datum}</div>
+          </div>
+          <button class="saved-del" onclick="deleteSaved(${a.id},this)">Löschen</button>
+        </div>
+        <div class="saved-list">${items}</div>`;
+      c.appendChild(div);
+    });
+  } catch { c.innerHTML='<div class="saved-empty">Verbindungsfehler.</div>'; }
+}
+
+async function deleteSaved(id, btn) {
+  btn.disabled = true;
+  try {
+    const res = await fetch('/api/analyses/'+id, {method:'DELETE'});
+    if(res.ok){ btn.closest('.saved-card').remove();
+      const c=document.getElementById('saved-list-container');
+      if(!c.querySelector('.saved-card')) c.innerHTML='<div class="saved-empty">Noch keine Analysen gespeichert.</div>';
+    } else { btn.disabled=false; }
+  } catch { btn.disabled=false; }
+}
+
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+renderDB('alle');
+checkSession();
+</script>
+</body>
+</html>
