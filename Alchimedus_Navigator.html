@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alchimedus Navigator</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: Calibri, sans-serif;
+      color: #454544;
+      background-color: #fafafa;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    .header {
+      border-bottom: 3px solid #8CC63E;
+      padding-bottom: 20px;
+      margin-bottom: 40px;
+    }
+    .header h1 {
+      font-size: 28px;
+      margin: 0 0 8px 0;
+      color: #454544;
+    }
+    .header p {
+      margin: 0;
+      color: #777777;
+      font-size: 14px;
+    }
+    .form-group {
+      margin-bottom: 30px;
+    }
+    .form-group label {
+      display: block;
+      font-weight: bold;
+      color: #33AB97;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+    .form-group.optional label {
+      color: #777777;
+      opacity: 0.7;
+    }
+    select {
+      width: 100%;
+      padding: 12px;
+      font-size: 14px;
+      border: 2px solid #ddd;
+      border-radius: 4px;
+      font-family: Calibri, sans-serif;
+      cursor: pointer;
+      background-color: #fff;
+    }
+    .form-group.optional select {
+      border: 1px solid #ddd;
+      background-color: #f9f9f9;
+    }
+    button {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: bold;
+      background-color: #8CC63E;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    button:hover:not(:disabled) {
+      background-color: #7aad35;
+    }
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+    .results {
+      margin-top: 40px;
+    }
+    .results h2 {
+      color: #33AB97;
+      margin-top: 0;
+      margin-bottom: 20px;
+      font-size: 18px;
+    }
+    .result-card {
+      margin-bottom: 25px;
+      padding: 20px;
+      background-color: #E9E9E9;
+      border-radius: 4px;
+      border-left: 4px solid #8CC63E;
+    }
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 10px;
+    }
+    .result-header h3 {
+      color: #454544;
+      margin: 0;
+      font-size: 16px;
+      font-weight: bold;
+    }
+    .result-type {
+      font-size: 11px;
+      color: #777777;
+      background-color: #fff;
+      padding: 2px 8px;
+      border-radius: 3px;
+    }
+    .nutze-das-weil {
+      margin: 12px 0;
+      color: #454544;
+      line-height: 1.6;
+      font-size: 14px;
+      font-style: italic;
+    }
+    .nutze-das-weil strong {
+      color: #33AB97;
+    }
+    .meta-tags {
+      display: flex;
+      gap: 15px;
+      margin: 12px 0;
+      font-size: 13px;
+    }
+    .meta-tag {
+      display: flex;
+      align-items: center;
+    }
+    .meta-tag.ja {
+      color: #8CC63E;
+    }
+    .meta-tag.nein {
+      color: #d32f2f;
+    }
+    .meta-tag.bedingt {
+      color: #ff9800;
+    }
+    .besonderheit {
+      margin: 10px 0;
+      color: #777777;
+      font-size: 13px;
+    }
+    .link {
+      margin: 10px 0;
+    }
+    .link a {
+      color: #13A1B6;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 13px;
+    }
+    .link a:hover {
+      text-decoration: underline;
+    }
+    .kontakt {
+      margin: 10px 0;
+      color: #454544;
+      font-size: 13px;
+    }
+    .no-results {
+      margin-top: 40px;
+      padding: 20px;
+      background-color: #fff3cd;
+      border-radius: 4px;
+      border-left: 4px solid #ff9800;
+    }
+    .no-results p {
+      margin: 0;
+      color: #856404;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>Alchimedus Navigator</h1>
+      <p>Finde den richtigen Bericht, das richtige Werkzeug oder das richtige Konzept</p>
+    </div>
+
+    <!-- Formular -->
+    <div class="form-group">
+      <label for="einsatzzweck">Was ist Dein Einsatzzweck?</label>
+      <select id="einsatzzweck">
+        <option value="">— Bitte wählen —</option>
+        <option value="akquise">Neue Interessenten akquirieren</option>
+        <option value="bafa-start">BAFA-Projekt starten</option>
+        <option value="fortschritt">Laufendes Projekt: Fortschritt dokumentieren</option>
+        <option value="abschluss">Projekt abschließen & dokumentieren</option>
+        <option value="ki">Spezial: KI & Digitalisierung</option>
+        <option value="nachfolge">Spezial: Unternehmensnachfolge / M&A vorbereiten</option>
+        <option value="vertrieb">Spezial: Vertrieb aufbauen & steuern</option>
+      </select>
+    </div>
+
+    <div class="form-group optional">
+      <label for="phase">In welcher Phase bist Du? (optional, für Zusatzkontextualisierung)</label>
+      <select id="phase">
+        <option value="">— Keine Eingrenzung —</option>
+        <option value="neu">Neuer Kunde, vor Check</option>
+        <option value="check">Gerade einen Check durchgeführt</option>
+        <option value="umset">Mitten in der Umsetzung</option>
+        <option value="abschl">Projekt läuft zum Abschluss</option>
+      </select>
+    </div>
+
+    <button id="findBtn" onclick="findResults()">Empfehlungen zeigen</button>
+
+    <!-- Ergebnisse -->
+    <div id="resultsContainer" class="results hidden"></div>
+    <div id="noResults" class="no-results hidden">
+      <p>Keine Empfehlung gefunden. Das ist überraschend. Schreib Clemens eine Nachricht!</p>
+    </div>
+  </div>
+
+  <script>
+    const database = [
+      {
+        id: 'ALN-001',
+        name: 'Kurzanalyse-Bericht',
+        type: 'BERICHT',
+        einsatzzweck: 'akquise',
+        nutzedasweil: 'Du sprichst mit neuen Interessenten, zeigst professionelle Grafiken und Auswertungen – ohne operative Details zu verraten. Das weckt Beratungsbedarf.',
+        bafa: 'Bedingt',
+        inqa: 'Nein',
+        besonderheit: 'Keine Umsetzungshilfen. Nicht als BAFA-Hauptnachweis verwenden.'
+      },
+      {
+        id: 'ALN-002',
+        name: 'Schwachstellenbericht (mit ersten Empfehlungen)',
+        type: 'BERICHT',
+        einsatzzweck: 'bafa-start',
+        nutzedasweil: 'Du identifizierst erste Schwachstellen und gibst konkrete Empfehlungen. Grundlage für das BAFA-Projekt und die erste Beratungsleistung. Auch für Akquise nutzbar.',
+        bafa: 'Ja',
+        inqa: 'Bedingt',
+        besonderheit: 'BAFA-nachweisgeeignet. Auch für Akquise nutzbar.'
+      },
+      {
+        id: 'ALN-003',
+        name: 'Zukunftsprojekte 24',
+        type: 'BERICHT',
+        einsatzzweck: 'bafa-start',
+        nutzedasweil: 'Du beschreibst die vorgeschlagenen Projekte mit aktivierten Aufgaben im Reiter Aufgaben/Projekte (Linear B). Das gibt Struktur und Verbindlichkeit für die Umsetzung.',
+        bafa: 'Ja',
+        inqa: 'Ja',
+        besonderheit: 'Im Rahmen der BAFA-Beratung nutzbar.'
+      },
+      {
+        id: 'ALN-004',
+        name: 'QM-Bericht mit Maßnahmen',
+        type: 'BERICHT',
+        einsatzzweck: 'fortschritt',
+        nutzedasweil: 'Du dokumentierst Maßnahmen, Aufgaben und Nachweise zwischen Projekttagen. Das ist Dein Fortschrittsbericht und zeigt kontinuierliche Umsetzung.',
+        bafa: 'Bedingt',
+        inqa: 'Bedingt',
+        besonderheit: 'Fortschrittsbericht / QM-Bericht.'
+      },
+      {
+        id: 'ALN-005',
+        name: 'Konzept- und Handbuchbericht',
+        type: 'BERICHT',
+        einsatzzweck: 'abschluss',
+        nutzedasweil: 'Du dokumentierst entwickelte Prozesse ohne Schwachstellen zu nennen. Behördensicher – für Zertifizierungen, Banken und offizielle Nachweise geeignet.',
+        bafa: 'Ja',
+        inqa: 'Bedingt',
+        besonderheit: 'Keine Schwachstellennennung. Geeignet für Datenschutz-, QM-Handbuch etc.'
+      },
+      {
+        id: 'ALN-006',
+        name: 'Unternehmensschwachstellenanalyse',
+        type: 'FRAGEBOGEN',
+        einsatzzweck: 'bafa-start',
+        nutzedasweil: 'Empfohlener Einstieg für BAFA- und INQA-Projekte. Umfassende Schwachstellenanalyse als Ausgangsbasis – empfohlen von Saskia Weisser / Rupert Bauer als starker BAFA-Einstieg.',
+        bafa: 'Ja',
+        inqa: 'Ja',
+        besonderheit: 'Empfohlen als starker BAFA-Einstieg.'
+      },
+      {
+        id: 'ALN-007',
+        name: 'Strategiehaus (Fragebogen Nr. 645)',
+        type: 'FRAGEBOGEN',
+        einsatzzweck: 'bafa-start',
+        nutzedasweil: 'Du klärst die strategische Ausgangsposition systematisch – ohne Digitalisierungsfokus. Alternative: Fragebogen Nr. 9 (ALN-008), wenn Digitalisierung + INQA absehbar sind.',
+        bafa: 'Ja',
+        inqa: 'Nein',
+        besonderheit: 'Alternative: Fragebogen Nr. 9 (ALN-008) bevorzugen, wenn Digitalisierung + INQA absehbar.'
+      },
+      {
+        id: 'ALN-008',
+        name: 'Fragebogen Nr. 9',
+        type: 'FRAGEBOGEN',
+        einsatzzweck: 'bafa-start',
+        nutzedasweil: 'Nutze das, wenn Digitalisierung und späteres INQA absehbar sind. Bevorzuge Nr. 9 gegenüber Nr. 645, wenn Digitalisierung im Fokus steht.',
+        bafa: 'Ja',
+        inqa: 'Ja',
+        besonderheit: 'Gegenüber Nr. 645 (ALN-007) bevorzugen, wenn Digitalisierung + INQA absehbar.'
+      },
+      {
+        id: 'ALN-009',
+        name: 'Potentialanalyse Nachfolge',
+        type: 'FRAGEBOGEN',
+        einsatzzweck: 'nachfolge',
+        nutzedasweil: 'Du analysierst die Nachfolgereife des Unternehmens systematisch. Grundlage für strukturierte Nachfolgeprozesse oder M&A-Vorbereitung.',
+        bafa: 'Ja',
+        inqa: 'Nein',
+        besonderheit: 'Spezifisch für Nachfolge/M&A-Vorbereitung.'
+      },
+      {
+        id: 'ALN-010',
+        name: 'PP3 – Persönlichkeitsanalyse',
+        type: 'FRAGEBOGEN',
+        einsatzzweck: 'bafa-start',
+        nutzedasweil: 'Du kategorisierst Schlüsselpersonen nach Persönlichkeitsprofilen. Sehr wertvoll bei Experteninterviews zu INQA-Start. Wichtig: Auswertung immer kommentieren!',
+        bafa: 'Nein',
+        inqa: 'Ja',
+        besonderheit: 'Auswertung kommentieren, um Verständlichkeit zu erhöhen. Besonders für INQA-Vorbereitung.'
+      },
+      {
+        id: 'ALN-011',
+        name: 'ID 796 – KI-Authority-Check',
+        type: 'CHECK',
+        einsatzzweck: 'ki',
+        nutzedasweil: 'Du analysierst die KI-Sichtbarkeit und digitale Autorität des KMU in 42 Fragen. Ergebnis: konkreter Handlungsplan. Ideal für KMU, die in ChatGPT/Copilot kaum sichtbar sind.',
+        bafa: 'Bedingt',
+        inqa: 'Nein',
+        besonderheit: '42 Fragen. Entitätenklarheit, Themenfokus, Fachsubstanz, externe Präsenz, reale KI-Sichtbarkeit.'
+      },
+      {
+        id: 'ALN-012',
+        name: 'ID 797 – Digitale Toolnutzung 10',
+        type: 'CHECK',
+        einsatzzweck: 'ki',
+        nutzedasweil: 'Du erstellst eine vollständige Tool-Landschafts-Analyse für IT-Governance und Kostenoptimierung. Basis für Change Management und strategische Investitionsentscheidungen für 12 Monate.',
+        bafa: 'Ja',
+        inqa: 'Bedingt',
+        besonderheit: 'Tool-Verzeichnis, Zufriedenheitsbewertungen, priorisierte Handlungsempfehlungen für 12 Monate.'
+      },
+      {
+        id: 'ALN-013',
+        name: 'ID 798 – Digitale Toolnutzung (Ultralight)',
+        type: 'CHECK',
+        einsatzzweck: 'ki',
+        nutzedasweil: 'Du bekommst schnell einen strukturierten Überblick über die Tool-Landschaft in vier Kernbereichen. Idealer Einstieg in die Digitalisierungsberatung – leichtere Variante zu ID 797.',
+        bafa: 'Bedingt',
+        inqa: 'Nein',
+        besonderheit: '4 Kernbereiche: Produktivität & Zusammenarbeit, Geschäftssoftware, Automatisierung & Marketing, KI-Tools. Leichtere Variante zu ALN-012.'
+      },
+      {
+        id: 'ALN-014',
+        name: 'PA Digital Transformation 4.0 KMU (60 Fragen)',
+        type: 'FRAGEBOGEN',
+        einsatzzweck: 'bafa-start',
+        nutzedasweil: 'Umfassende Potenzialanalyse für digitale Transformation und INQA-Einstieg. Drei Dimensionen: Strukturkraft, Aufbruchkraft, Gemeinschaftskraft. Basiert auf 180 Erfolgsstudien und 10.000+ Interviews.',
+        bafa: 'Ja',
+        inqa: 'Ja',
+        besonderheit: '60 Fragen. Abgestimmt auf INQA-Rahmenwerk. Einsatz als Einzelberatung, Workshop oder Mitarbeiterbefragung.'
+      },
+      {
+        id: 'ALN-015',
+        name: 'ID 336 – Vertriebssteuerung mit System!',
+        type: 'FRAGEBOGEN',
+        einsatzzweck: 'vertrieb',
+        nutzedasweil: 'Du prüfst den Vertriebsaufbau strukturiert in 5 Dimensionen und 10 Fragen mit Performance Index. Basisvariante für Erstanalyse ohne Vorwissen. Inkl. QM-System für Vertrieb und Vorlagen.',
+        bafa: 'Bedingt',
+        inqa: 'Nein',
+        besonderheit: '10 Fragen. Basisvariante. Alternativen: ID 374 (ALN-016, ähnlicher Reifegrad), ID 559 (ALN-017, Automatisierungsfokus).'
+      },
+      {
+        id: 'ALN-016',
+        name: 'ID 374 – Vertriebssteuerung mit System!',
+        type: 'FRAGEBOGEN',
+        einsatzzweck: 'vertrieb',
+        nutzedasweil: 'Variante zu ID 336 mit leicht abweichenden Frageformulierungen. Geeignet wenn ID 336 bereits genutzt wurde und ein Folge-Check sinnvoll ist.',
+        bafa: 'Bedingt',
+        inqa: 'Nein',
+        besonderheit: '10 Fragen. Abweichende Frageformulierungen zu ID 336. Alternativen: ALN-015 (Basis), ALN-017 (Automatisierung).'
+      },
+      {
+        id: 'ALN-017',
+        name: 'ID 559 – Vertriebssteuerung mit System!',
+        type: 'FRAGEBOGEN',
+        einsatzzweck: 'vertrieb',
+        nutzedasweil: 'Fortgeschrittene Variante mit Fokus auf Sales-Automatisierung. Empfohlen wenn die Vertriebsgrundstruktur bereits steht und Automatisierung/Skalierung im Fokus ist.',
+        bafa: 'Bedingt',
+        inqa: 'Nein',
+        besonderheit: '10 Fragen. Automatisierungsfokus. Alternativen: ALN-015 (Basischeck), ALN-016 (ähnlicher Reifegrad wie 336).'
+      }
+    ];
+
+    function getMetaClass(value) {
+      if (value === 'Ja') return 'ja';
+      if (value === 'Nein') return 'nein';
+      return 'bedingt';
+    }
+
+    function findResults() {
+      const einsatzzweck = document.getElementById('einsatzzweck').value;
+      const resultsContainer = document.getElementById('resultsContainer');
+      const noResults = document.getElementById('noResults');
+
+      if (!einsatzzweck) return;
+
+      const matches = database.filter(item => item.einsatzzweck === einsatzzweck);
+
+      resultsContainer.innerHTML = '';
+      noResults.classList.add('hidden');
+
+      if (matches.length === 0) {
+        noResults.classList.remove('hidden');
+        resultsContainer.classList.add('hidden');
+        return;
+      }
+
+      resultsContainer.classList.remove('hidden');
+      resultsContainer.innerHTML = `<h2>${matches.length} Empfehlung${matches.length !== 1 ? 'en' : ''} für Dich</h2>`;
+
+      matches.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'result-card';
+
+        let html = `
+          <div class="result-header">
+            <h3>${item.name}</h3>
+            <span class="result-type">${item.type}</span>
+          </div>
+          <p class="nutze-das-weil"><strong>Nutze das, weil:</strong> ${item.nutzedasweil}</p>
+          <div class="meta-tags">
+            <span class="meta-tag ${getMetaClass(item.bafa)}"><strong>BAFA:</strong> ${item.bafa}</span>
+            <span class="meta-tag ${getMetaClass(item.inqa)}"><strong>INQA:</strong> ${item.inqa}</span>
+          </div>
+        `;
+
+        if (item.besonderheit) {
+          html += `<p class="besonderheit"><strong>Hinweis:</strong> ${item.besonderheit}</p>`;
+        }
+
+        if (item.link) {
+          html += `<p class="link"><a href="${item.link}" target="_blank">→ ${item.link}</a></p>`;
+        }
+
+        if (item.kontakt) {
+          html += `<p class="kontakt"><strong>Kontakt:</strong> ${item.kontakt}</p>`;
+        }
+
+        card.innerHTML = html;
+        resultsContainer.appendChild(card);
+      });
+    }
+
+    // Button aktivieren/deaktivieren
+    document.getElementById('einsatzzweck').addEventListener('change', function() {
+      document.getElementById('findBtn').disabled = !this.value;
+    });
+  </script>
+</body>
+</html>
